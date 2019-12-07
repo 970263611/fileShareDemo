@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>首页</title>
+<link href="bootstrap.css" rel="stylesheet">
+</head>
+<body>
+<div style="width: 500px;margin: 0 auto;"id="userDiv">
+<form>
+    <div class="form-group">
+        <label for="exampleInputEmail1">用户名</label>
+        <input type="email" class="form-control" id="name" placeholder="username">
+    </div>
+    <div class="form-group">
+        <label for="exampleInputPassword1">密码</label>
+        <input type="password" class="form-control" id="password" placeholder="Password">
+    </div>
+    <button type="button" class="btn btn-default" onclick="login()">登录</button>
+    <a href="regist">去注册</a>
+</form>
+</div>
+<script src="jquery.js"></script>
+<script src="bootstrap.js"></script>
+<script>
+    $(function (){
+        var height = document.documentElement.clientHeight;
+        $("#userDiv").css("margin-top",(height-182)/2);
+    })
+    function login(){
+        $.ajax({
+            url:"/loginpost",
+            data:{"name":$("#name").val(),"password":$("#password").val()},
+            type:"post",
+            async:"false",
+            dataType:"json",
+            success: function (data){
+                alert(data.msg);
+                if(data.flag){
+                    window.location.href = "/index";
+                }
+            }
+        })
+    }
+</script>
+</body>
+</html>

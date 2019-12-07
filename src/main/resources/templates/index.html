@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>首页</title>
+<link href="bootstrap.css" rel="stylesheet">
+</head>
+<body>
+<div style="width: 1000px;
+    margin: 0 auto;
+    margin-top: 100px;">
+    <h2 style="margin-bottom: 20px;" id="welcome"></h2>
+    <div>
+        <ul class="nav nav-tabs" role="tablist" id="menu">
+            <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">共享大厅</a></li>
+            <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">我的共享</a></li>
+            <li role="presentation" id="inline" style="display: none"><a href="#inlineUser" aria-controls="profile" role="tab" data-toggle="tab">在线用户</a></li>
+            <li role="presentation" style="float: right;">
+                <div style="width: 230px;">
+                    <input type="file" style="display: inline-block;width: 180px;" id="file">
+                    <input type="button" value="上传" onclick="upload()">
+                </div>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="home">
+                <table class="table table-striped" id="table">
+                    <tr><td>文件名</td><td>用户</td><td>ip</td><td>文件大小</td><td>上传时间</td><td>操作</td></tr>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="profile">
+                <table class="table table-striped" id="tablemy">
+                    <tr><td>文件名</td><td>用户</td><td>ip</td><td>文件大小</td><td>上传时间</td><td>操作</td></tr>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="inlineUser">
+                <table class="table table-striped" id="tableinline">
+                    <tr><td>用户名</td><td>密码</td><td>是否在线</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="jquery.js"></script>
+<script src="bootstrap.js"></script>
+<script>
+    $(function(){
+        $.ajax({
+            url:"/getUser",
+            type:"post",
+            async:"false",
+            dataType:"json",
+            success: function (data){
+                loginUser = data.obj.name;
+                loginUserRole = data.obj.role;
+                $("#welcome").html("欢迎：" + loginUser + "&nbsp&nbsp&nbsp<a style='font-size: 15px;cursor:pointer;' href=\"javascript:void(0);\" onclick='layout()'>退出</a>")
+                if(loginUserRole == '0'){
+                    $("#inline").show();
+                }
+            }
+        })
+        $.ajax({
+            url:"/getFiles",
+            type:"post",
+            async:"false",
+            dataType:"json",
+            success: function (data){
+                if(data.flag){
+                    var html = "";
+                    for(var a=0;a<data.obj.length;a++){
+                        html += "<tr>";
+                        html += "<td>"+ data.obj[a].name +"</td>";
+                        html += "<td>"+ data.obj[a].username +"</td>";
+                        html += "<td>"+ data.obj[a].ip +"</td>";
+                        html += "<td>"+ data.obj[a].size +"字节</td>";
+                        html += "<td>"+ data.obj[a].time +"</td>";
+                        html += "<td>"+ "<button onclick='saveFile(\""+data.obj[a].id+"\")'>下载</button>";
+                        if(data.msg.split(":")[0] == data.obj[a].user || data.msg.split(":")[1] == "0"){
+                            html += "<button onclick='delFile(\""+data.obj[a].id+"\")'>删除</button>";
+                        }
+                        html += "</td>";
+                        html += "</tr>";
+                    }
+                    $("#table").append(html);
+                }
+            }
+        })
+        $.ajax({
+            url:"/getMyFiles",
+            type:"post",
+            async:"false",
+            dataType:"json",
+            success: function (data){
+                if(data.flag){
+                    var html = "";
+                    for(var a=0;a<data.obj.length;a++){
+                        html += "<tr>";
+                        html += "<td>"+ data.obj[a].name +"</td>";
+                        html += "<td>"+ data.obj[a].username +"</td>";
+                        html += "<td>"+ data.obj[a].ip +"</td>";
+                        html += "<td>"+ data.obj[a].size +"字节</td>";
+                        html += "<td>"+ data.obj[a].time +"</td>";
+                        html += "<td>"+ "<button onclick='saveFile(\""+data.obj[a].id+"\")'>下载</button>";
+                        if(data.msg.split(":")[0] == data.obj[a].user || data.msg.split(":")[1] == "0"){
+                            html += "<button onclick='delFile(\""+data.obj[a].id+"\")'>删除</button>";
+                        }
+                        html += "</td>";
+                        html += "</tr>";
+                    }
+                    $("#tablemy").append(html);
+                }
+            }
+        })
+        $.ajax({
+            url:"/inline",
+            type:"post",
+            async:"false",
+            dataType:"json",
+            success: function (data){
+                if(data.flag){
+                    var html = "";
+                    for(var a=0;a<data.obj.length;a++){
+                        html += "<tr>";
+                        html += "<td>"+ data.obj[a].name +"</td>";
+                        html += "<td>"+ data.obj[a].password +"</td>";
+                        if(data.obj[a].inline == "1"){
+                            html += "<td>是</td>";
+                        }else{
+                            html += "<td>否</td>";
+                        }
+                        html += "</tr>";
+                    }
+                    $("#tableinline").append(html);
+                }
+            }
+        })
+    })
+    function layout(){
+        $.ajax({
+            url:"/layout",
+            type:"post",
+            async:"false",
+            dataType:"json",
+            success: function (data){
+                alert(data.msg);
+                if(data.flag){
+                    window.location.href = "/login";
+                }
+            }
+        })
+    }
+
+    function delFile(id){
+        $.ajax({
+            url:"/delFile",
+            type:"post",
+            data:{"id":id},
+            async:"false",
+            dataType:"json",
+            success: function (data){
+                alert(data.msg);
+                if(data.flag){
+                    window.location.href = "/index";
+                }
+            }
+        })
+    }
+
+    function upload(){
+        var file = $("#file")[0].files[0];
+        var formData = new FormData();
+        formData.append("userfile", file);
+        $.ajax({
+            url:"/setFile",
+            type:"post",
+            data:formData,
+            async:"false",
+            dataType:"json",
+            processData: false,
+            cache : false,
+            contentType: false,
+            success: function (data){
+                alert(data.msg);
+                if(data.flag){
+                    window.location.href = "/index";
+                }
+            }
+        })
+    }
+
+    function saveFile(id){
+        window.location.href = "/saveFile?id=" + id;
+    }
+</script>
+</body>
+</html>
